@@ -46,7 +46,11 @@ namespace assignment {
     // 2. Увеличьте размер двоичной кучи.
     // 3. Вызовите операцию sift_up над индексом вставленного элемента.
 
-    return false;
+    Node* new_node = new Node(key, value);
+    data_[size_] = *new_node;
+    sift_up(size_);
+    size_ += 1;
+    return true;
   }
 
   std::optional<int> MinBinaryHeap::Extract() {
@@ -62,7 +66,11 @@ namespace assignment {
     // 3. Уменьшите размер двоичной кучи.
     // 4. Вызовите функцию "спуска" узлов heapify над индексом корня.
 
-    return std::nullopt;
+    Node curr_node = data_[0];
+    data_[0] = data_[size_ - 1];
+    size_ -= 1;
+    heapify(0);
+    return curr_node.value;
   }
 
   bool MinBinaryHeap::Remove(int key) {
@@ -75,15 +83,29 @@ namespace assignment {
     // 3. Вызовите над индексом удаляемого элемента функцию sift_up.
     // 4. Извлеките корневой (удаляемый) узел из кучи операцией Extract.
 
-    return true;
+    if (Contains(key)) {
+      int index_to_delete = search_index(key).value();
+      data_[index_to_delete].key = min_key_value;
+      sift_up(index_to_delete);
+      Extract();
+      return true;
+    }
+    return false;
   }
 
   void MinBinaryHeap::Clear() {
-    // Write your code here ...
+    size_ = 0;
+    delete[] data_;
+    data_ = new Node[capacity_];
+    std::fill(data_, data_ + capacity_, Node{});
   }
 
   std::optional<int> MinBinaryHeap::Search(int key) const {
-    // Write your code here ...
+    for (int i = 0; i < size_; i++) {
+      if (data_[i].key == key) {
+        return data_[i].value;
+      }
+    }
     return std::nullopt;
   }
 
@@ -122,8 +144,8 @@ namespace assignment {
   void MinBinaryHeap::heapify(int index) {
 
     // индексы левого и правого потомков узла с индексом index
-    const int left_index = left_child_index(index);
-    const int right_index = right_child_index(index);
+    int left_index = left_child_index(index);
+    int right_index = right_child_index(index);
 
     // вышли за пределы массива, останавливаемся
     if (left_index >= size_) {
@@ -141,7 +163,7 @@ namespace assignment {
       smallest_key_index = right_index;
     }
 
-    // если индекс наименьшего узла найден (не равен индексу самого узла)
+    // если индекс наименьшего узла найден (не остался прежним)
     if (smallest_key_index != index) {
 
       // меняем местами родителя и потомка (swap)
@@ -153,7 +175,11 @@ namespace assignment {
   }
 
   std::optional<int> MinBinaryHeap::search_index(int key) const {
-    // Write your code here ...
+    for (int i = 0; i < size_; i++) {
+      if (data_[i].key == key) {
+        return i;
+      }
+    }
     return std::nullopt;
   }
 
